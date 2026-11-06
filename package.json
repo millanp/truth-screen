@@ -1,0 +1,12 @@
+{
+  "name": "truthscreen",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild build/anthropic-entry.js --bundle --format=esm --platform=browser --minify --outfile=extension/src/vendor/anthropic-sdk.js"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "esbuild": "^0.28.2"
+  }
+}

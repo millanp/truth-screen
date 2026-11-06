@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TruthScreen · Checked sentences</title>
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    main { max-width: 1100px; margin: 32px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 14px; }
+    h1 { margin: 0; font-size: 22px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .toolbar input[type=text] { width: 260px; }
+    .chip { border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+    .chip[aria-pressed=true] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card);
+            border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    tr:last-child td { border-bottom: none; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    td.time { color: var(--muted); white-space: nowrap; }
+    td.page { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    td.page a { color: var(--muted); text-decoration: none; }
+    .v { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
+         white-space: nowrap; background: var(--line); color: var(--ink); }
+    .v.false { background: var(--amber-soft); color: var(--amber); }
+    .v.true { background: rgba(22,163,74,.12); color: #15803d; }
+    .v.error { background: rgba(220,38,38,.12); color: #b91c1c; }
+    @media (prefers-color-scheme: dark) { .v.true { color: #4ade80; } .v.error { color: #f87171; } }
+    tr.underlined td.sentence { text-decoration: underline; text-decoration-color: var(--amber); text-decoration-thickness: 2px; }
+    .tag { font-size: 11px; color: var(--muted); }
+    details { margin-top: 4px; max-width: 360px; } details summary { cursor: pointer; }
+    details p { margin: 6px 0 0; font-size: 12px; }
+    .v.unverifiable { background: var(--line); }
+    .empty { padding: 32px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="row">
+      <h1 class="brand">Truth<i>Screen</i> <span class="muted" style="font-weight:400">· checked sentences</span></h1>
+      <span class="spacer"></span>
+      <button id="export">Export JSON</button>
+      <button id="clear">Clear log</button>
+    </div>
+    <div class="row small muted" id="summary"></div>
+    <div class="toolbar">
+      <span id="chips"></span>
+      <span class="spacer"></span>
+      <input type="text" id="q" placeholder="Search sentences or pages…">
+    </div>
+    <table>
+      <thead>
+        <tr><th>Time</th><th>Jev</th><th class="num">P(false)</th><th>Claude</th><th>Sentence</th><th>Page</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No sentences yet. Open a page and scroll — sentences show up here as Jev answers.</div>
+  </main>
+  <script src="log.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    body { width: 340px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+    header .tag { font-size: 12px; }
+    ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow: auto; }
+    li { padding: 8px 10px; border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 8px;
+         background: var(--card); cursor: pointer; font-size: 13px; }
+    li:hover { border-color: var(--muted); border-left-color: var(--amber); }
+    li .p { color: var(--amber); font-weight: 600; font-size: 12px; }
+    li .truth { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    li.pending { border-left-style: dotted; }
+    li.pending .p { color: var(--muted); }
+    .count { font-size: 28px; font-weight: 650; line-height: 1; }
+  </style>
+</head>
+<body>
+  <header class="row">
+    <img src="../icons/icon32.png" width="22" height="22" alt="">
+    <div>
+      <div class="brand">Truth<i>Screen</i></div>
+      <div class="tag muted">See through the noise.</div>
+    </div>
+  </header>
+
+  <div id="error" class="warn" hidden></div>
+
+  <div class="card row">
+    <div>
+      <div>Underline false sentences</div>
+      <div class="small muted">Everywhere</div>
+    </div>
+    <span class="spacer"></span>
+    <label class="switch"><input type="checkbox" id="enabled"><span></span></label>
+  </div>
+  <div class="card row">
+    <div>
+      <div>On this site</div>
+      <div class="small muted" id="host"></div>
+    </div>
+    <span class="spacer"></span>
+    <label class="switch"><input type="checkbox" id="siteEnabled"><span></span></label>
+  </div>
+
+  <section id="results">
+    <div class="row" style="margin-bottom:8px">
+      <span class="count" id="count">0</span>
+      <span class="muted">false or misleading claims on this page</span>
+    </div>
+    <div class="small muted" id="stats" style="margin-bottom:4px"></div>
+    <div class="small" style="margin-bottom:8px">
+      View checked sentences: <a href="#" id="logPage">this page</a> · <a href="#" id="logAll">all pages</a>
+    </div>
+    <ul id="list"></ul>
+  </section>
+
+  <footer class="row small muted">
+    <span>Judged by Jev</span>
+    <span class="spacer"></span>
+    <a href="#" id="options">Settings</a>
+  </footer>
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

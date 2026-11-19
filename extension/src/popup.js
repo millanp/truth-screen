@@ -18,9 +18,9 @@ $("siteEnabled").checked = !!host && !settings.disabledHosts.includes(host);
 $("siteEnabled").disabled = !host;
 
 const err = $("error");
-if (!settings.apiKey || !settings.anthropicKey) {
+if (!settings.apiKey) {
   err.hidden = false;
-  err.innerHTML = `Add your ${settings.apiKey ? "Anthropic" : "Jev"} API key to start. <a href="#" id="setup">Open settings</a>`;
+  err.innerHTML = `Add your Jev API key to start. <a href="#" id="setup">Open settings</a>`;
   $("setup").onclick = (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
@@ -51,6 +51,7 @@ $("options").onclick = (e) => {
 };
 
 const STATUS_LABELS = {
+  flagged: "Flagged by Jev",
   reviewing: "Jev flagged · Claude checking…",
   false: "False",
   misleading: "Misleading",
@@ -64,7 +65,8 @@ async function refresh() {
   } catch {}
   const flags = resp?.flags ?? [];
   $("stats").textContent = describeStats(resp);
-  $("count").textContent = flags.filter((f) => f.status === "false" || f.status === "misleading").length;
+  $("countLabel").textContent = settings.anthropicKey ? "false or misleading claims on this page" : "claims flagged by Jev on this page";
+  $("count").textContent = flags.filter((f) => f.status === "flagged" || f.status === "false" || f.status === "misleading").length;
   const list = $("list");
   list.replaceChildren(
     ...flags.map((f, i) => {
@@ -81,7 +83,7 @@ async function refresh() {
         t.textContent = `Actually: ${f.truth}`;
         li.append(t);
       }
-      if (f.status === "reviewing" || f.status === "error") li.classList.add("pending");
+      if (f.status === "flagged" || f.status === "reviewing" || f.status === "error") li.classList.add("pending");
       li.onclick = () => {
         chrome.tabs.sendMessage(tab.id, { type: "focusFlag", index: i });
         window.close();
@@ -100,6 +102,7 @@ function describeStats(resp) {
   let line = `Jev screened ${done - errors} of ${sent} sentences`;
   if (sent > done) line += ` (${sent - done} in flight)`;
   if (errors) line += `, ${errors} errors`;
+  if (!settings.anthropicKey) return line + ".";
   line += `. ${reviews.sent} sent to Claude`;
   if (reviews.sent > reviews.done) line += ` (${reviews.sent - reviews.done} checking)`;
   const v = reviews.verdicts;

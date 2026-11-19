@@ -4,7 +4,7 @@ A Chrome extension that underlines false claims on any website and explains them
 
 1. **Jev screens every sentence** you scroll past. Jev is TypeSafe's fast decision model. It's called directly on
    TypeSafe's API by default, or via OpenRouter.
-2. **Claude verifies anything suspicious.** Claude (Haiku 4.5 by default; Opus 5.5 optional) researches the sentence with web search, pinpoints the
+2. **Optionally, Claude verifies flagged sentences.** Claude (Haiku 4.5 by default; Opus 5.5 optional) researches the sentence with web search, pinpoints the
    false clause, and explains why it's false, what's actually true, and the full picture, with sources.
 
 ## Install
@@ -14,8 +14,8 @@ A Chrome extension that underlines false claims on any website and explains them
 3. The settings page opens. Add:
    - a Jev key: TypeSafe from [console.typesafe.ai](https://console.typesafe.ai/settings/keys) (default), or
      OpenRouter from [openrouter.ai/keys](https://openrouter.ai/keys);
-   - an Anthropic key from [platform.claude.com](https://platform.claude.com/settings/keys).
-4. Click **Test Jev** and **Test Claude**.
+   - optionally, an Anthropic key from [platform.claude.com](https://platform.claude.com/settings/keys).
+4. Click **Test Jev**. If you added an Anthropic key, you can also click **Test Claude**.
 5. Open any article, or `demo.html`. For the demo, first turn on "Allow access to file URLs" in the extension's details.
 
 ## How it works
@@ -24,7 +24,7 @@ A Chrome extension that underlines false claims on any website and explains them
   It only checks blocks that scroll near the viewport. Questions, fragments and UI text are skipped.
 - `extension/src/background.js` sends each sentence (plus the page title, URL and surrounding paragraph) to Jev as a
   true/false **choice** question. Opinions and unverifiable claims count as true.
-- If Jev gives P(false) ≥ the threshold (default 30%), the sentence gets a faint **dotted** underline and goes to
+- If Jev gives P(false) ≥ the threshold (default 30%), the sentence gets a faint **dotted** underline. Without an Anthropic key, it stays marked as flagged by Jev. With a key, it goes to
   `extension/src/claude.js`. That module calls Claude with web search and a strict `report_verdict` tool, which
   returns `false` / `misleading` / `true` / `unverifiable`, the exact false clause, why it's false, what's actually
   true, the full picture, and sources.
@@ -39,8 +39,8 @@ A Chrome extension that underlines false claims on any website and explains them
 - Underlines use the CSS Custom Highlight API, so the page DOM is never modified.
 - Jev verdicts and Claude reviews are cached in `chrome.storage.local`, so each sentence is paid for once.
 - **Ctrl + right-click any sentence** (on macOS, Ctrl+click also works) to see its verdict, even if it isn't underlined.
-  The panel shows Jev's read, and you can click **Ask Claude** for a full check of any sentence.
-- Click an underline to open the side panel with Claude's explanation. `Esc` / `→` closes it, and `Alt+↑/↓` moves
+  The panel shows Jev's read, and with an Anthropic key you can click **Ask Claude** for a full check of any sentence.
+- Click an underline to open the side panel with Jev's score or Claude's explanation. `Esc` / `→` closes it, and `Alt+↑/↓` moves
   between claims.
 
 ## Seeing what it checked

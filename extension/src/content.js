@@ -13,8 +13,9 @@
     "KBD", "SAMP", "SVG", "MATH", "CANVAS", "IFRAME", "BUTTON", "NAV", "TEMPLATE",
   ]);
 
-  // One highlight per flag status: Jev suspects it and Claude is checking, or Claude confirmed it.
+  // Jev-only flags and pending reviews share the dotted underline.
   const highlights = {
+    flagged: new Highlight(),
     reviewing: new Highlight(),
     false: new Highlight(),
     misleading: new Highlight(),
@@ -25,7 +26,7 @@
 
   const style = document.createElement("style");
   style.textContent = `
-    ::highlight(truthscreen-reviewing) {
+    ::highlight(truthscreen-flagged), ::highlight(truthscreen-reviewing) {
       text-decoration-line: underline;
       text-decoration-style: dotted;
       text-decoration-color: rgba(180, 83, 9, 0.55);
@@ -61,7 +62,7 @@
   const stats = freshStats();
 
   /**
-   * A sentence Jev found suspicious. status: "reviewing" (Claude is checking), "false", "misleading", or "error".
+   * A sentence Jev found suspicious. status: "flagged" (Jev only), "reviewing" (Claude is checking), "false", "misleading", or "error".
    * `range` covers the whole sentence; `hlRange` is what's underlined (the false clause once Claude names it).
    * @type {{range: Range, hlRange: Range, findRange: (text: string) => Range|null, sentence: string, context: string,
    *         jev: any, status: string, review?: any, error?: string}[]}
@@ -298,6 +299,7 @@
     if (flagged.some((f) => f.range === range)) return;
     const flag = { range, hlRange: range, findRange, sentence, context, jev, status: "" };
     flagged.push(flag);
+    if (!settings.anthropicKey) return setStatus(flag, "flagged");
     setStatus(flag, "reviewing");
     review(sentence, context).then((out) => {
       if (!flagged.includes(flag)) return;
@@ -364,8 +366,8 @@
   function reportCount() {
     clearTimeout(countTimer);
     countTimer = setTimeout(() => {
-      const confirmed = liveFlags().filter((f) => f.status === "false" || f.status === "misleading").length;
-      chrome.runtime.sendMessage({ type: "count", count: confirmed }).catch(() => {});
+      const count = liveFlags().filter((f) => f.status === "flagged" || f.status === "false" || f.status === "misleading").length;
+      chrome.runtime.sendMessage({ type: "count", count }).catch(() => {});
     }, 250);
   }
 
@@ -442,7 +444,7 @@
 
   function shouldRun() {
     return (
-      settings.enabled && !!settings.apiKey && !!settings.anthropicKey && !settings.disabledHosts.includes(location.hostname)
+      settings.enabled && !!settings.apiKey && !settings.disabledHosts.includes(location.hostname)
     );
   }
 
@@ -539,7 +541,7 @@
           <button class="icon" data-act="close" title="Close (Esc)">✕</button>
         </header>
         <div class="body"></div>
-        <footer><span class="pos"></span><span class="spacer"></span><span>Jev → Claude</span></footer>
+        <footer><span class="pos"></span></footer>
       </div>`;
     shadow.addEventListener("click", (e) => {
       const act = e.target.closest?.("[data-act]")?.dataset.act;
@@ -594,13 +596,20 @@
 
   function panelBody(f) {
     const q = encodeURIComponent(f.sentence);
-    const jevLine = `Flagged by Jev (${pct(f.jev.probabilities?.false ?? f.jev.confidence)} likely false)`;
+    const jevLine = `Flagged by Jev (${pct(jevPFalse(f.jev))} likely false)`;
     const searchLinks = `
       <div class="actions">
         <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/search?q=${q}">Search the web</a>
         <button data-act="dismiss">Hide</button>
       </div>`;
 
+    if (f.status === "flagged") {
+      return `
+        <span class="pill muted-pill">Flagged by Jev</span>
+        <blockquote>${escapeHtml(f.sentence)}</blockquote>
+        <p class="note">${pct(jevPFalse(f.jev))} likely false. Claude review is off.</p>
+        ${searchLinks}`;
+    }
     if (f.status === "reviewing") {
       return `
         <span class="pill muted-pill"><span class="spin"></span> Claude is checking</span>
@@ -703,9 +712,11 @@
       : "";
     const why = st.jevFailed
       ? `Jev couldn't check this sentence${settings.apiKey ? "" : " (no Jev key set)"}.`
-      : isSuspicious(st.jev)
-        ? `At or above your ${pct(settings.threshold)} threshold, so it's sent to Claude.`
-        : `Below your ${pct(settings.threshold)} threshold for sending to Claude, so Claude hasn't checked it.`;
+      : !settings.anthropicKey
+        ? "Claude review is off."
+        : isSuspicious(st.jev)
+          ? `At or above your ${pct(settings.threshold)} threshold, so it's sent to Claude.`
+          : `Below your ${pct(settings.threshold)} threshold for sending to Claude, so Claude hasn't checked it.`;
     return `
       ${verdict}
       <blockquote>${escapeHtml(st.sentence)}</blockquote>

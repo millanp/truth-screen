@@ -17,7 +17,7 @@
     <div>
       <h1 class="brand">Truth<i>Screen</i></h1>
       <p class="muted">See through the noise. <a href="https://docs.typesafe.ai" target="_blank">Jev</a> screens every
-        sentence you scroll past. Anything it finds suspicious goes to Claude, which researches it on the web, underlines
+        sentence you scroll past. It underlines suspicious sentences. With an Anthropic key, Claude researches them on the web, pinpoints
         the false part, and explains what's actually true.</p>
     </div>
 
@@ -41,14 +41,14 @@
       </label>
 
       <label class="field">
-        <span>Send to Claude when Jev is at least <b id="thresholdOut"></b> sure it's false</span>
+        <span>Flag a sentence when Jev is at least <b id="thresholdOut"></b> sure it's false</span>
         <input type="range" id="threshold" min="0.1" max="0.9" step="0.05">
-        <span class="small muted">Lower catches more but sends more to Claude (slower, costs more). Claude makes the final call.</span>
+        <span class="small muted">Lower thresholds flag more sentences. Each flagged sentence goes to Claude when review is enabled.</span>
       </label>
 
       <h2 style="margin:8px 0 0;font-size:15px">Step 2 · Claude verifies and explains</h2>
       <label class="field">
-        <span>Anthropic API key</span>
+        <span>Anthropic API key (optional)</span>
         <input type="password" id="anthropicKey" placeholder="sk-ant-…" autocomplete="off">
         <span class="small muted">From <a href="https://platform.claude.com/settings/keys" target="_blank">platform.claude.com</a>.
           Only sent to api.anthropic.com.</span>

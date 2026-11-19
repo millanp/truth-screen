@@ -19,6 +19,9 @@ $("threshold").value = s.threshold;
 $("model").value = s.model;
 $("anthropicKey").value = s.anthropicKey;
 $("claudeModel").value = s.claudeModel;
+const updateClaudeTest = () => { $("testClaude").disabled = !$("anthropicKey").value.trim(); };
+$("anthropicKey").oninput = updateClaudeTest;
+updateClaudeTest();
 const showThreshold = () => ($("thresholdOut").textContent = `${Math.round($("threshold").value * 100)}%`);
 $("threshold").oninput = showThreshold;
 // Apply the threshold as soon as the slider is released; open pages re-check right away.
